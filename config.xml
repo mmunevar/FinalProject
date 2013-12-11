@@ -4,7 +4,7 @@
              version="2.0.0.0" id="com.miguel.HelloWorld">
  
    <author href="http://www.example.com/"> Miguel Munevar</author>
- 
+    <icon src="images/icon.jpg"/>
    <name>Final Project</name>
 
    <feature id="blackberry.app">
