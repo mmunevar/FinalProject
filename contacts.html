@@ -1,0 +1,38 @@
+  <div    style="background-color:#F0E68C"  data-bb-type="screen">
+      <div data-bb-type="title" data-bb-caption="My Contacts" data-bb-back-caption="Back"></div>
+        <div id = "ShowContacts" style = "display:block">
+            <div data-bb-type="image-list"   id="contactList" >  
+
+        </div>
+      </div>
+
+      <div id = "addContact" style = "display:none">
+          <label> First Name </label>
+          <input id="firstName" data-bb-caption="First Name" type="text"/>
+
+          <label> Last Name </label>
+          <input id="lastName" data-bb-caption="Last Name" type="text"/>
+
+          <label> Mobile Phone </label>
+          <input id="mobile" data-bb-caption="Mobile Phone" type="text"/>
+
+          <label> Home Phone</label>
+          <input id="homePhone" data-bb-caption="Home Phone" type="text"/>
+
+          <label> Work Email </label>
+          <input id="wEmail" data-bb-caption="Work Email" type="text"/>
+
+          <label> Home Email </label>
+          <input id="hEmail" data-bb-caption="Home Email" type="text"/>
+
+          <label> How we met </label>
+          <input id="howwemet" data-bb-caption="How we met" type="text"/>
+
+          <div data-bb-type="button" onclick= "createContact()" id="plain">Add Contact</div>
+      </div>
+
+      <div data-bb-type="action-bar">
+        <div data-bb-type="action" data-bb-style="tab" data-bb-img="images/mycontacts.jpg" onclick= "viewContacts()">All Contacts</div>
+        <div data-bb-type="action" data-bb-style="tab" data-bb-img="images/add1.jpg" onclick= "addingContacts()">New Contact</div>
+      </div>
+  </div> 

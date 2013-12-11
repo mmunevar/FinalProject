@@ -1,0 +1,540 @@
+<html>
+      <head>
+          <link  rel="stylesheet" type="text/css" href="css/bbui.css"></link>
+          <link  rel="stylesheet" type="text/css" href="css/style.css"></link>
+          <script type="text/javascript" src="map.js"></script>
+          <script type="text/javascript" src="js/bbui.js"></script>
+          <script type="text/javascript" src="js/jquery-1.9.1.min.js" ></script>
+          <script type="text/javascript" src="local:///chrome/webworks.js" type="text/javascript"></script>
+          <script src="https://maps.googleapis.com/maps/api/js?sensor=true&libraries=places"></script>
+         
+          <script type="text/javascript">
+          var webworksreadyFired=false;
+
+          window.addEventListener('load',function() {
+              document.addEventListener('webworksready', function(e) {
+                  bb.init({
+
+                    onscreenready: function(element,id,params){
+                        if (id=="contacts"){
+                          pim();
+                        }
+
+                        if (id=="campusservices"){
+                          data();
+                        }
+
+                          if (id=="campusdetail"){
+
+
+                             for (var i = 0; i < dataservices.campusservices[selectedService].campusdetail.length; i++) {
+                               div = document.createElement('div');
+                              div.setAttribute('data-bb-type','item');
+                              div.innerHTML= dataservices.campusservices[selectedService].campusdetail[i].facility+ "<br>"+dataservices.campusservices[selectedService].campusdetail[i].place+ "<br>";
+
+
+
+                              element.getElementById("container").appendChild(div);
+                             };
+                             
+
+
+                      }
+
+                        if (id=="detailpage"){
+                          element.getElementById("name").innerHTML = params.firstName +" "+params.lasttName;
+                          element.getElementById("mobile").innerHTML = params.mobile;
+                          element.getElementById("homePhone").innerHTML = params.homePhone;
+                          element.getElementById("wEmail").innerHTML = params.wEmail;
+                          element.getElementById("hEmail").innerHTML = params.hEmail;
+                          element.getElementById("howwemet").innerHTML = params.howwemet;
+                          element.getElementById("img").src = img;
+
+                      }
+
+
+                       },
+                    ondomready: function(element,id,params){
+
+
+
+
+                      if (id=="google"){
+                       
+                        initGoogleMaps();
+                      }
+                    }
+
+
+                  });
+
+                dbNamespace = {};
+                 dbNamespace.db = window.openDatabase('contacts database', '1.0', 'Offline contacts Information', 5*1024*1024);
+                    createDB();
+                  
+                 getContacts();
+
+              
+              bb.pushScreen('MenuPage.html', 'firstScreen');
+
+
+              }, false);
+          }, false);
+
+
+blackberry.io.sandbox = false;
+var sid;
+var img;
+var howwemet;
+var selectedService;
+var dataservices;
+function onSaveSuccess(contact) {
+ //alert("Contact with id=" + contact.id + " is saved!");
+
+
+addContacts(contact.id)
+
+
+}
+function onSaveError(error) {
+ console.log("Error saving contact: " + error.code);
+}
+function createContact() {
+ var contacts = blackberry.pim.contacts,
+ ContactField = contacts.ContactField,
+ name = {},
+ workPhone = { type: ContactField.WORK, value: document.getElementById('mobile').value },
+ homePhone = { type: ContactField.WORK, value: document.getElementById('homePhone').value  },
+ workEmail = { type: ContactField.WORK, value: document.getElementById('wEmail') .value },
+ homeEmail = { type: ContactField.HOME, value: document.getElementById('hEmail').value  },
+ contact;
+ name.familyName = document.getElementById('lastName').value ;
+ name.givenName = document.getElementById('firstName').value ;
+ contact = contacts.create({
+ "displayName": document.getElementById('firstName').value  + " " +document.getElementById('lastName').value ,
+ "name": name,
+ "phoneNumbers": [workPhone, homePhone],
+ "emails": [workEmail, homeEmail]
+ });
+ contact.save(onSaveSuccess, onSaveError);
+}
+
+
+
+function pim() {
+
+fields = ['id','name'];
+success = function (contacts) {
+
+
+  getContacts(contacts);
+};
+
+error = function (error) {
+};
+
+options = new blackberry.pim.contacts.ContactFindOptions();
+blackberry.pim.contacts.find(fields, options, success, error);
+
+}
+
+
+
+
+
+function getContacts(mycontacts) {
+
+  var pos;
+
+    var db = dbNamespace.db;
+
+    db.transaction(
+
+      function(tx) {
+        tx.executeSql(
+          "SELECT * FROM contacts",
+          [],
+
+          function(trans, result) {
+            var rowOutput ="";
+
+            var array = [];
+          
+            for(var i=0; i < result.rows.length; i++) {   
+
+
+              var exist = false;
+               pos = -1;
+
+
+            for(var j=0; j < mycontacts.length; j++) {   
+
+             
+
+              if (parseInt(result.rows.item(i).ID)  == parseInt(mycontacts[j].id)){
+                  exist = true;
+                  pos = j;
+                  break;
+
+              }
+
+            }
+              if (exist == true){
+
+                      var div = document.createElement('div');
+                      div.setAttribute('data-bb-type','item');
+                      div.setAttribute('data-bb-title',mycontacts[pos].name.givenName);
+             div.setAttribute('data-id',result.rows.item(i).ID);
+               div.setAttribute('data-howwemet',result.rows.item(i).howwemet);
+                      div.setAttribute('data-img',result.rows.item(i).img);
+
+
+
+            div.onclick= function () {
+
+            var sel = document.getElementById('contactList').selected;
+            howwemet=sel.getAttribute('data-howwemet');
+            img = sel.getAttribute('data-img');
+            sid = sel.getAttribute('data-id');;
+            getDetails(sel.getAttribute('data-id'));
+        
+
+            }
+
+                      array.push(div);
+                  }
+             else{
+              deleteit(result.rows.item(i).ID);
+
+
+             }         
+
+                     
+
+               }
+
+            document.getElementById("contactList").refresh(array);
+
+          },
+
+          function(trans, error) {
+            // handle the error
+            alert("Error getting contacts ");
+          }
+        )
+      }
+    );
+}
+
+
+function addContacts(id) {
+    var db = dbNamespace.db;
+   
+    var howwemet = document.getElementById("howwemet").value;
+    db.transaction(
+      function(tx) {
+        tx.executeSql(
+          "INSERT INTO contacts(id, howwemet) VALUES (?,?)",
+            [id, howwemet],
+            function(trans, result) {
+                // handle the success
+                alert("contact added");
+
+                document.getElementById("firstName").value= "";
+                document.getElementById("lastName").value= "";
+
+
+                document.getElementById("mobile").value= "";
+                document.getElementById("homePhone").value= "";
+
+                document.getElementById("wEmail").value= "";
+                document.getElementById("hEmail").value= "";
+
+                document.getElementById("howwemet").value= "";
+
+            }, 
+            function(trans, error) {
+                 // handle the error
+                 alert("Error adding " + name + ": " + error);
+            }
+        )
+      }
+    );
+}
+
+function createDB() {
+
+    var db = dbNamespace.db;
+     
+    db.transaction(function(tx) {
+        tx.executeSql("CREATE TABLE IF NOT EXISTS contacts(ID INTEGER PRIMARY KEY ASC, howwemet TEXT, img TEXT)", 
+        [], 
+        function(trans, result) {
+           // handle  the success
+           //alert("Database created!");
+        }, 
+        function(trans, error) {
+            // handle the error
+            alert("Database creation error: " + error);
+        }
+        );
+
+        tx.executeSql("CREATE TABLE IF NOT EXISTS calendar(ID INTEGER PRIMARY KEY ASC)", 
+        [], 
+        function(trans, result) {
+           // handle  the success
+           //alert("Database created!");
+        }, 
+        function(trans, error) {
+            // handle the error
+            alert("Database creation error: " + error);
+        }
+        );
+
+
+    });
+}
+
+function addingContacts(){
+
+  document.getElementById('addContact').style.display = 'block';
+  document.getElementById('ShowContacts').style.display = 'none';
+
+
+}
+function viewContacts(){
+
+  document.getElementById('ShowContacts').style.display = 'block';
+  document.getElementById('addContact').style.display = 'none';
+pim();
+
+  
+}
+
+
+function addingCalendar(){
+
+  document.getElementById('addCalendar').style.display = 'block';
+  document.getElementById('ShowCalendar').style.display = 'none';
+
+
+}
+function viewCalendar(){
+
+  document.getElementById('ShowCalendar').style.display = 'block';
+  document.getElementById('addCalendar').style.display = 'none';
+//pim();
+
+  
+}
+
+
+function invokeSite(link){
+
+
+    blackberry.invoke.invoke({
+        target: "sys.browser",
+        uri: "http://www.octranspo.com/mobi"
+    }, onSuccess, onError);
+
+}
+
+function onSuccess(response) {
+ console.log("<p>Invocation query successful: " + response + "</p>");
+}
+
+function onError(error) {
+ console.log("<p>Invocation query error: " + error + "</p>");
+}
+
+function deleteit(id) {
+    var db = dbNamespace.db;
+   
+
+    db.transaction(
+      function(tx) {
+        tx.executeSql(
+          "DELETE FROM CONTACTS WHERE ID  = " + id,
+            [],
+            function(trans, result) {
+                // handle the success
+               alert("Contact deleted: ");
+
+               
+
+            }, 
+            function(trans, error) {
+                 // handle the error
+                 alert("Error deleting " + id + ": " + error);
+            }
+        )
+      }
+    );
+}
+
+
+function deleteitCalendar() {/////////check which Id 
+    var db = dbNamespace.db;
+   
+
+    db.transaction(
+      function(tx) {
+        tx.executeSql(
+          "DELETE FROM CALENDAR WHERE ID  = " + id,
+            [],
+            function(trans, result) {
+                // handle the success
+                alert("Event deleted: " + id);
+
+               
+
+            }, 
+            function(trans, error) {
+                 // handle the error
+                 alert("Error deleting " + id + ": " + error);
+            }
+        )
+      }
+    );
+}
+
+
+
+function getDetails(contactId) {
+var contacts = blackberry.pim.contacts;
+var contact = contacts.getContact(contactId);
+if (contact) {
+
+
+
+          bb.pushScreen('detailpage.html', 'detailpage', {'firstName': contact.name.givenName, 
+        'lasttName':  contact.name.givenName,
+      'mobile':  contact.phoneNumbers[1].value,
+    'homePhone':  contact.phoneNumbers[0].value,
+  'wEmail':  contact.emails[1].value,
+'hEmail':  contact.emails[0].value, 'howwemet': howwemet});
+
+
+} 
+
+}
+
+function getDetailsCalendar(calendarId) {
+var calendars = blackberry.pim.contacts;
+var calendar = contacts.getContact(calendarId);
+if (contact) {
+
+
+
+          bb.pushScreen('calendardetailpage.html', 'calendardetailpage', {'firstName': contact.name.givenName, 
+        'lasttName':  contact.name.givenName,
+      'mobile':  contact.phoneNumbers[1].value,
+    'homePhone':  contact.phoneNumbers[0].value,
+  'wEmail':  contact.emails[1].value,
+'hEmail':  contact.emails[0].value, 'howwemet': howwemet});
+  
+
+} 
+
+}
+
+function startcamera() {
+
+var pic = blackberry.invoke.card.CAMERA_MODE_PHOTO;
+blackberry.invoke.card.invokeCamera(pic, function (path) {
+
+
+var fpath = 'file://' + path;
+img=fpath;
+
+document.getElementById("img").src = fpath;
+
+updateimg(sid);
+
+
+},
+function (reason) {
+alert("cancelled " + reason);
+},
+function (error) {
+if (error) {
+alert(" error "+ error);
+} else {
+console.log(" success " );
+}
+});
+}
+
+
+
+function updateimg(id) {
+    var db = dbNamespace.db;
+   
+//alert("dsf");
+    db.transaction(
+      function(tx) {
+        tx.executeSql(
+          "UPDATE CONTACTS SET img = ?  WHERE ID  = ? ",
+            [img, id],
+            function(trans, result) {
+                // handle the success
+                //alert("image  updated: " + id);
+
+               
+
+            }, 
+            function(trans, error) {
+                 // handle the error
+                 alert("Error deleting " + id + ": " + error);
+            }
+        )
+      }
+    );
+}
+
+
+function data () {
+    $.getJSON("Data.js",success).fail(error);
+}
+
+function success (xhrData,status,jqXHR) {
+  dataservices=xhrData;
+
+  var items=[];
+
+    for (var i = 0; i < dataservices.campusservices.length; i++) {
+
+
+      var div = document.createElement('div');
+      div.setAttribute('data-bb-type','item');
+      div.setAttribute('data-bb-title',dataservices.campusservices[i].service);
+      div.setAttribute('data-id',i);
+      
+      items.push(div);
+
+        div.onclick= function () {
+          var sel = document.getElementById('campusList').selected;
+          selectedService=sel.getAttribute('data-id');
+          bb.pushScreen('campusdetail.html', 'campusdetail');
+        }
+
+
+
+    }
+
+    document.getElementById("campusList").refresh(items);
+    
+}
+
+
+
+function error (jqXHR,textStatus,errorThrown) {
+  alert (errorThrown);
+}
+          </script>
+      </head>
+      <body>
+        
+      </body>
+</html>
+

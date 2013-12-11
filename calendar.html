@@ -1,0 +1,96 @@
+  <div    style="background-color:#F0E68C"  data-bb-type="screen">
+      <div data-bb-type="title" data-bb-caption="My Timetable" data-bb-back-caption="Back"></div>
+        <div id = "ShowCalendar" style = "display:block">
+            <div data-bb-type="image-list"   id="calendarList" >  
+
+        </div>
+      </div>
+
+      <div id = "addCalendar" style = "display:none">
+        
+  <label> Course Name </label>
+          <input id="firstName" data-bb-caption="First Name" type="text"/>
+
+          <label> Classroom Number </label>
+          <input id="lastName" data-bb-caption="Last Name" type="text"/>
+          <select>
+            <option value = "1">Monday</option>
+            <option value = "2">Tuesday</option>
+            <option value = "3">Wednesday</option>
+            <option value = "4">Thursday</option>
+            <option value = "5">Friday</option>
+          </select>
+
+          <select>
+            <option value = "6">6:00 AM</option>
+            <option value = "7">7:00 AM</option>
+            <option value = "8">8:00 AM</option>
+            <option value = "9">9:00 AM</option>
+            <option value = "10">10:00 AM</option>
+            <option value = "11">11:00 AM</option>
+            <option value = "12">12:00 PM</option>
+            <option value = "13">13:00 PM</option>
+            <option value = "14">14:00 PM</option>
+            <option value = "15">15:00 PM</option>
+            <option value = "16">16:00 PM</option>
+            <option value = "17">17:00 PM</option>
+            <option value = "18">18:00 PM</option>
+            <option value = "19">19:00 PM</option>
+            <option value = "20">20:00 PM</option>
+            <option value = "21">21:00 PM</option>
+          </select>
+
+          <select>
+            <option value = "1">1 Hour</option>
+            <option value = "2">2 Hour</option>
+            <option value = "3">3 Hour</option>
+            <option value = "4">4 Hour</option>
+          </select>
+         
+          <label> This class is a Lab </label>
+          <div data-bb-type="toggle" data-bb-on="On" data-bb-off="Off"></div>
+          <label> Reminder </label>
+           <select>
+            <option value = "1">15 Minutes</option>
+            <option value = "2">30 Minutes</option>
+            <option value = "3">45 Minutes</option>
+            <option value = "4">1 Hour</option>
+          </select>
+         
+         
+          <div data-bb-type="toggle" data-bb-on="On" data-bb-off="Off"></div>
+
+          <div data-bb-type="button"  onclick=null    style="color:red"   id="plain">Delete</div>
+
+<!--
+          onclick= "deleteitCalendar()"
+          <label> First Name </label>
+          <input id="firstName" data-bb-caption="First Name" type="text"/>
+
+          <label> Last Name </label>
+          <input id="lastName" data-bb-caption="Last Name" type="text"/>
+
+          <label> Mobile Phone </label>
+          <input id="mobile" data-bb-caption="Mobile Phone" type="text"/>
+
+          <label> Home Phone</label>
+          <input id="homePhone" data-bb-caption="Home Phone" type="text"/>
+
+          <label> Work Email </label>
+          <input id="wEmail" data-bb-caption="Work Email" type="text"/>
+
+          <label> Home Email </label>
+          <input id="hEmail" data-bb-caption="Home Email" type="text"/>
+
+          <label> How we met </label>
+          <input id="howwemet" data-bb-caption="How we met" type="text"/>
+-->
+
+          <div data-bb-type="button" onclick= "createCalendar()" id="plain">Save to Calendar</div>
+      </div>
+
+      <div data-bb-type="action-bar">
+        <div data-bb-type="action" data-bb-style="tab" data-bb-img="images/calendar1.jpg" onclick= "viewCalendar()">View All</div>
+        <div data-bb-type="action" data-bb-style="tab" data-bb-img="images/addevent.jpg" onclick= "addingCalendar()">Add event</div>
+      </div>
+  </div> 
